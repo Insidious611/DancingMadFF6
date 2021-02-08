@@ -22,12 +22,29 @@ mysonglist = song.parseSongXML("songs.xml")
 # Should we use the /new directory in the mirrors. Use when testing new song selections, turn off on release.
 NEW_PATH = False
 
+# Should we grab mirrors.dat from github to make sure it's up to date?
+REMOTE_MIRRORS = True
+
 def _doMirrors(pcmlist, mirrors = None):
     if mirrors == None:
         mirrors = []
     if mirrors == []:
+        mirrorfn = "mirrors-new.dat"
+        try: 
+            with open("mirrors-new.dat", 'wb') as f:
+                mrcurl = pycurl.Curl()
+                mrcurl.setopt(md5curl.URL, "https://raw.githubusercontent.com/Insidious611/DancingMadFF6/master/installer/mirrors.dat")
+                mrcurl.setopt(md5curl.FAILONERROR, True)
+                mrcurl.setopt(md5curl.CAINFO, certifi.where())
+                mrcurl.setopt(md5curl.TIMEOUT, 5)
+                mrcurl.setopt(md5curl.WRITEDATA, f)
+                mrcurl.setopt(md5curl.FAILONERROR, True)
+                mrcurl.perform()
+        except as e:
+            print(e)
+            mirrorfn = "mirrors.dat"
         try:
-            with open("mirrors.dat") as f:
+            with open(mirrorfn) as f:
                 mirrors = f.readlines()
                 mirrors = [x.strip() for x in mirrors]
         except IOError:
